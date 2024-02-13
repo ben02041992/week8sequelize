@@ -1,0 +1,18 @@
+{
+  "name": "week8sequelize",
+  "version": "1.0.0",
+  "description": "��#\u0000 \u0000w\u0000e\u0000e\u0000k\u00008\u0000s\u0000e\u0000q\u0000u\u0000e\u0000l\u0000i\u0000z\u0000e\u0000\r\u0000 \u0000",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.3",
+    "express": "^4.18.2",
+    "mysql2": "^3.9.1",
+    "sequelize": "^6.37.0"
+  }
+}
