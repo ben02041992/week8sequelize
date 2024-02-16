@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 
 const Book = require("./books/model");
+const bookRouter = require("./books/routes");
 
 const port = process.env.PORT || 5001;
 
@@ -16,6 +17,8 @@ const syncTables = async (req, res) => {
 app.get("/health", (req, res) => {
   res.send({ message: "API is healthy" });
 });
+
+app.use(bookRouter);
 
 app.listen(port, () => {
   console.log(`Server is running on ${port}.`);
