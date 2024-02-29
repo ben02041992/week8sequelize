@@ -30,8 +30,36 @@ const getBookByTitle = async (req, res) => {
   res.send({ book: book, genre: genre });
 };
 
+const deleteAllBooks = async (req, res) => {
+  try {
+    await Book.destroy({ where: {} });
+    res.status(200).json({ message: "All books were deleted" });
+  } catch (error) {
+    res.status(500).json({ message: "Internal error", error });
+  }
+};
+
+const updateBookByTitle = async (req, res) => {
+  const title = req.params.title;
+  const newTitle = req.body.title;
+  try {
+    const updateTitle = await Book.update(
+      { title: newTitle },
+      { where: { title: title } }
+    );
+    if (!title) {
+      return res.status(404).json({ message: "Book not found" });
+    }
+    res.status(200).json({ message: `${updateTitle} was updated` });
+  } catch (error) {
+    res.status(500).json({ message: "Internal error", error });
+  }
+};
+
 module.exports = {
   addBook,
   getAllBooks,
   getBookByTitle,
+  deleteAllBooks,
+  updateBookByTitle,
 };
