@@ -1,11 +1,12 @@
 const Book = require("./model");
+const Author = require("../authors/model");
 const Genre = require("../genres/model");
 
 const addBook = async (req, res) => {
   try {
     const book = await Book.create({
       title: req.body.title,
-      author: req.body.author,
+      AuthorId: req.body.AuthorId,
       GenreId: req.body.GenreId,
     });
     if (res.status(404)) {
