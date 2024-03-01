@@ -1,65 +1,228 @@
 const Book = require("./model");
-const Author = require("../authors/model");
 const Genre = require("../genres/model");
+const Author = require("../authors/model");
 
-const addBook = async (req, res) => {
+exports.addBook = async (req, res) => {
   try {
-    const book = await Book.create({
-      title: req.body.title,
-      AuthorId: req.body.AuthorId,
-      GenreId: req.body.GenreId,
-    });
-    if (res.status(404)) {
-      console.log(res);
-    }
-    res.status(200).json({ message: `${book.title} was added`, book: book });
-  } catch (error) {
-    res.status(500).json({ message: error.message, error: error });
-  }
-};
+    const { title, genre, author } = req.body;
 
-const getAllBooks = async (req, res) => {
-  const books = await Book.findAll({ include: "Genre" });
-  res.send(books);
-};
-
-const getBookByTitle = async (req, res) => {
-  const book = await Book.findOne({ where: { title: req.params.title } });
-  const genre = await Genre.findOne({ where: { id: book.GenreId } });
-
-  res.send({ book: book, genre: genre });
-};
-
-const deleteAllBooks = async (req, res) => {
-  try {
-    await Book.destroy({ where: {} });
-    res.status(200).json({ message: "All books were deleted" });
-  } catch (error) {
-    res.status(500).json({ message: "Internal error", error });
-  }
-};
-
-const updateBookByTitle = async (req, res) => {
-  const title = req.params.title;
-  const newTitle = req.body.title;
-  try {
-    const updateTitle = await Book.update(
-      { title: newTitle },
-      { where: { title: title } }
-    );
     if (!title) {
-      return res.status(404).json({ message: "Book not found" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Title is required" });
     }
-    res.status(200).json({ message: `${updateTitle} was updated` });
+
+    if (!genre) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Genre is required" });
+    }
+
+    if (!author) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Author is required" });
+    }
+
+    const genreExists = await Genre.findOne({ where: { name: genre } });
+
+    if (!genreExists) {
+      return res
+        .status(404)
+        .json({ success: false, message: `Genre ${genre} not found` });
+    }
+
+    const authorExists = await Author.findOne({ where: { name: author } });
+
+    if (!authorExists) {
+      return res
+        .status(404)
+        .json({ success: false, message: `Author ${author} not found` });
+    }
+
+    const book = await Book.create({
+      title,
+      GenreId: genreExists.id,
+      AuthorId: authorExists.id,
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: `${book.title} was added`,
+      data: {
+        id: book.id,
+        title: book.title,
+        author: authorExists.name,
+        genre: genreExists.name,
+      },
+    });
   } catch (error) {
-    res.status(500).json({ message: "Internal error", error });
+    return res.status(500).json({
+      success: false,
+      message: "Error adding book",
+      error: error.errors,
+    });
   }
 };
 
-module.exports = {
-  addBook,
-  getAllBooks,
-  getBookByTitle,
-  deleteAllBooks,
-  updateBookByTitle,
+exports.getAllBooks = async (req, res) => {
+  try {
+    const books = await Book.findAll({
+      attributes: { exclude: ["GenreId", "AuthorId"] },
+      include: ["Genre", "Author"],
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "All books returned",
+      count: books.length,
+      data: books,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Error getting books",
+      error: error.errors,
+    });
+  }
+};
+
+exports.updateBookByTitle = async (req, res) => {
+  try {
+    const searchTitle = req.params.title;
+    const { title, author, genre } = req.body;
+
+    if (!searchTitle) {
+      return res
+        .status(400)
+        .json({ success: false, message: "searchTitle params is required" });
+    }
+
+    const book = await Book.update(
+      { title, author, genre },
+      { where: { title: searchTitle } }
+    );
+
+    if (book[0] === 0) {
+      return res.status(404).json({
+        success: false,
+        message: `Book with title ${searchTitle} not found`,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: `${searchTitle} was updated`,
+      updatedData: { title, author, genre },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Error updating book",
+      error: error.errors,
+    });
+  }
+};
+
+exports.deleteBookByTitle = async (req, res) => {
+  try {
+    const { title } = req.params;
+
+    if (!title) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Title is required" });
+    }
+
+    const book = await Book.destroy({ where: { title } });
+
+    if (book[0] === 0) {
+      return res.status(404).json({
+        success: false,
+        message: `Book with title ${title} not found`,
+      });
+    }
+
+    return res
+      .status(200)
+      .json({ success: true, message: `${title} was deleted`, data: [] });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Error deleting book",
+      error: error.errors,
+    });
+  }
+};
+
+exports.deleteAllBooks = async (req, res) => {
+  try {
+    await Book.destroy({ truncate: true });
+    return res
+      .status(200)
+      .json({ success: true, message: "All books were deleted", data: [] });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Error deleting all books",
+      error: error.errors,
+    });
+  }
+};
+
+exports.getBookByAuthor = async (req, res) => {
+  try {
+    const books = await Book.findAll({
+      where: { authorId: req.params.authorId },
+    });
+
+    if (books.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: `Books by author ${req.params.authorId} not found`,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: `Books by authorId ${req.params.authorId} returned`,
+      data: books,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Error getting book by author",
+      error: error.errors,
+    });
+  }
+};
+
+exports.getBookByTitle = async (req, res) => {
+  try {
+    const { title } = req.params;
+    const book = await Book.findOne({
+      where: { title },
+      attributes: { exclude: ["GenreId", "AuthorId"] },
+      include: ["Genre", "Author"],
+    });
+
+    if (!book) {
+      return res.status(404).json({
+        success: false,
+        message: `Book ${title} not found`,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: `Book ${title} returned`,
+      data: book,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Error getting book by title",
+      error: error.errors,
+    });
+  }
 };

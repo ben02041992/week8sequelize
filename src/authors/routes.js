@@ -1,12 +1,14 @@
 const { Router } = require("express");
 const authorRouter = Router();
 
-const { addAuthor, getAllAuthors, getBookByAuthor } = require("./controllers");
+const {
+  addNewAuthor,
+  getAllAuthors,
+  getBooksByAuthor,
+} = require("./controllers");
 
-authorRouter.post("/authors/addAuthor", addAuthor);
-
-authorRouter.get("/authors/getAllAuthors", getAllAuthors);
-
-authorRouter.get("/authors/getBookByAuthor/:author", getBookByAuthor);
+authorRouter.post("/addAuthor", addNewAuthor);
+authorRouter.get("/", getAllAuthors);
+authorRouter.get("/:author", getBooksByAuthor);
 
 module.exports = authorRouter;

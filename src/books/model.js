@@ -10,10 +10,6 @@ const Book = sequelize.define(
       unique: true,
       allowNull: false,
     },
-    genre: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    }
   },
   { timestamps: false }
 );
