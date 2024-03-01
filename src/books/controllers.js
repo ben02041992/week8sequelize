@@ -1,8 +1,8 @@
 const Book = require("./model");
-const Genre = require("../genres/model");
+const Genre = require("../genre/model");
 const Author = require("../authors/model");
 
-exports.addBook = async (req, res) => {
+const addBook = async (req, res) => {
   try {
     const { title, genre, author } = req.body;
 
@@ -65,7 +65,7 @@ exports.addBook = async (req, res) => {
   }
 };
 
-exports.getAllBooks = async (req, res) => {
+const getAllBooks = async (req, res) => {
   try {
     const books = await Book.findAll({
       attributes: { exclude: ["GenreId", "AuthorId"] },
@@ -87,7 +87,7 @@ exports.getAllBooks = async (req, res) => {
   }
 };
 
-exports.updateBookByTitle = async (req, res) => {
+const updateBookByTitle = async (req, res) => {
   try {
     const searchTitle = req.params.title;
     const { title, author, genre } = req.body;
@@ -124,7 +124,7 @@ exports.updateBookByTitle = async (req, res) => {
   }
 };
 
-exports.deleteBookByTitle = async (req, res) => {
+const deleteBookByTitle = async (req, res) => {
   try {
     const { title } = req.params;
 
@@ -155,7 +155,7 @@ exports.deleteBookByTitle = async (req, res) => {
   }
 };
 
-exports.deleteAllBooks = async (req, res) => {
+const deleteAllBooks = async (req, res) => {
   try {
     await Book.destroy({ truncate: true });
     return res
@@ -170,7 +170,7 @@ exports.deleteAllBooks = async (req, res) => {
   }
 };
 
-exports.getBookByAuthor = async (req, res) => {
+const getBookByAuthor = async (req, res) => {
   try {
     const books = await Book.findAll({
       where: { authorId: req.params.authorId },
@@ -197,7 +197,7 @@ exports.getBookByAuthor = async (req, res) => {
   }
 };
 
-exports.getBookByTitle = async (req, res) => {
+const getBookByTitle = async (req, res) => {
   try {
     const { title } = req.params;
     const book = await Book.findOne({
@@ -225,4 +225,14 @@ exports.getBookByTitle = async (req, res) => {
       error: error.errors,
     });
   }
+};
+
+module.exports = {
+  addBook,
+  getAllBooks,
+  deleteBookByTitle,
+  updateBookByTitle,
+  deleteAllBooks,
+  getBookByAuthor,
+  getBookByTitle,
 };

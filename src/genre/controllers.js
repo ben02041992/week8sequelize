@@ -1,7 +1,7 @@
 const Genre = require("./model");
 const Book = require("../books/model");
 
-exports.getAllGenres = async (req, res) => {
+const getAllGenres = async (req, res) => {
   try {
     const genres = await Genre.findAll();
 
@@ -28,7 +28,7 @@ exports.getAllGenres = async (req, res) => {
   }
 };
 
-exports.addNewGenre = async (req, res) => {
+const addNewGenre = async (req, res) => {
   try {
     const { name } = req.body;
 
@@ -52,7 +52,7 @@ exports.addNewGenre = async (req, res) => {
   }
 };
 
-exports.getBooksByGenreName = async (req, res) => {
+const getBooksByGenreName = async (req, res) => {
   try {
     const { genreName } = req.params;
 
@@ -87,3 +87,5 @@ exports.getBooksByGenreName = async (req, res) => {
     });
   }
 };
+
+module.exports = { getBooksByGenreName, addNewGenre, getAllGenres };

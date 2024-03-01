@@ -3,11 +3,11 @@ const express = require("express");
 const sequelize = require("./db/connection");
 
 const Book = require("./books/model");
-const Genre = require("./genres/model");
+const Genre = require("./genre/model");
 const Author = require("./authors/model");
 
 const bookRouter = require("./books/routes");
-const genreRouter = require("./genres/routes");
+const genreRouter = require("./genre/routes");
 const authorRouter = require("./authors/routes");
 
 const PORT = process.env.PORT || 5001;
@@ -39,11 +39,10 @@ app.get("/health", (req, res) => {
 });
 
 app.use("/books", bookRouter);
-app.use("/genres", genreRouter);
+app.use("/genre", genreRouter);
 app.use("/authors", authorRouter);
 
 app.listen(PORT, () => {
   syncTables();
-
   console.log(`Server is running on port ${PORT}`);
 });
