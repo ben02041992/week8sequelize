@@ -1,36 +1,75 @@
 const Book = require("../books/model");
 const Author = require("./model");
 
-const addAuthor = async (req, res) => {
+const addNewAuthor = async (req, res) => {
   try {
-    const author = await Author.create({
-      authorName: req.body.authorName,
-    });
-    res.status(201).json({
-      message: `${author.authorName} was added`,
-      author: author,
-    });
+    const { name } = req.body;
+    if (!name) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Name is required" });
+    }
+    const newAuthor = await Author.create({ name });
+    return res
+      .status(201)
+      .json({ success: true, message: "Author added", data: newAuthor });
   } catch (error) {
-    res.status(500).json({ message: error.message, error: error });
+    return res.status(500).json({
+      success: false,
+      message: "Error adding author",
+      error: error.errors,
+    });
   }
 };
 
 const getAllAuthors = async (req, res) => {
-  const authors = await Author.findAll({ include: "Book" });
-  res.send(authors);
+  try {
+    const authors = await Author.findAll();
+    return res.status(200).json({
+      success: true,
+      message: "All authors returned",
+      count: authors.length,
+      data: authors,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Error getting authors",
+      error: error.errors,
+    });
+  }
 };
 
-const getBookByAuthor = async (req, res) => {
-  const author = await Author.findOne({
-    where: { author: req.params.name },
-  });
-  const book = await Book.findAll({ where: { id: book.AuthorId } });
-
-  res.send({ book: book, author: author });
+const getBooksByAuthor = async (req, res) => {
+  try {
+    const { author } = req.params;
+    const books = await Author.findOne({
+      where: { name: author },
+      include: [
+        {
+          model: Book,
+          attributes: { exclude: ["GenreId", "AuthorId"] },
+          include: ["Genre", "Author"],
+        },
+      ],
+    });
+    return res.status(200).json({
+      success: true,
+      message: `Books by ${author} returned`,
+      data: books,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Error getting books by author",
+      error: error.errors,
+    });
+  }
 };
+res.send({ book: book, author: author });
 
 module.exports = {
-  addAuthor,
+  addNewAuthor,
   getAllAuthors,
-  getBookByAuthor,
+  getBooksByAuthor,
 };
